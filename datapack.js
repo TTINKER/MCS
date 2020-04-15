@@ -1,17 +1,21 @@
 const fs = require("fs")
 
 class Datapack {
-    constructor(packname, mcmeta) {
+    constructor(packname, commandSet, mcmeta) {
         this.packname = packname
         this.mcmeta = mcmeta
-        this.mkdirSafe(`./${this.packname}/`)
-        this.mkdirSafe(`./${this.packname}/data/`)
+        this.commandSet = commandSet
+        fs.existsSync(`./${this.packname}/`) && fs.rmdirSync(`./${this.packname}/`, {
+            recursive: true
+        })
+        fs.mkdirSync(`./${this.packname}/`)
+        fs.mkdirSync(`./${this.packname}/data/`)
         fs.writeFile(`./${this.packname}/pack.mcmeta`, JSON.stringify(mcmeta), err => console.log(mcmeta))
     }
     createNameSpace(nameSpace) {
-        this.mkdirSafe(`./${this.packname}/data/${nameSpace}`)
+        fs.mkdirSync(`./${this.packname}/data/${nameSpace}`)
         for (let i of ['advancements', 'functions', 'loot_tables', 'predicates', 'recipes', 'structures', 'tags']) {
-            this.mkdirSafe(`./${this.packname}/data/${nameSpace}/${i}`)
+            fs.mkdirSync(`./${this.packname}/data/${nameSpace}/${i}`)
         }
         return {
             createFunction: this.createFunction.bind(this, nameSpace),
@@ -19,27 +23,28 @@ class Datapack {
         }
     }
     createFunction(nameSpace, funcName, callback) {
+        const dir = `./${this.packname}/data/${nameSpace}/functions/${funcName}.mcfunction`
         const writer = str => {
-            const dir = `./${this.packname}/data/${nameSpace}/functions/${funcName}.mcfunction`
-            fs.writeFile(dir, str, err => console.log(`${dir} : ${str}`))
+            console.log(`${dir} : ${str}`)
+            fs.appendFile(dir, str, err => console.log(err))
         }
-        callback(new mcFunc(this.packname, writer, nameSpace, funcName))
+        fs.writeFile(dir, '', err => console.log(dir))
+        callback(new mcFunc(this.packname, writer, nameSpace, funcName, this.commandSet))
         return `${nameSpace}:${funcName}`
-    }
-    mkdirSafe(dir) {
-        fs.existsSync(dir) || fs.mkdirSync(dir)
     }
 }
 
 class mcFunc {
-    constructor(packname, writer, nameSpace, funcName) {
+    constructor(packname, writer, nameSpace, funcName, commandSet) {
         this.packname = packname
         this.writer = writer
         this.nameSpace = nameSpace
         this.funcName = funcName
-    }
-    gamemode(target, gamemode) {
-        this.writer(`gamemode ${gamemode} ${target.toString()}\n`)
+        commandSet.forEach((value, key, map) => {
+            this[key] = function (...args) {
+                writer(value /*.bind(this)*/(...args))
+            }
+        })
     }
 }
 

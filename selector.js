@@ -8,6 +8,7 @@ class Selector {
         } else {
             this.conditions = new Map()
         }
+        console.log('Selector constructed : ' + this.toString())
     }
 
     toString() {
@@ -16,6 +17,10 @@ class Selector {
             conStr.push(`${key}=${value}`)
         }
         return `@${this.type}[${conStr.toString()}]`
+    }
+
+    isPlayer() {
+        return this.type === 'p' || this.type === 'r' || this.type === 'a'
     }
 }
 
