@@ -14,7 +14,9 @@ const herobrine = test.createNameSpace('herobrine')
 herobrine.createFunction('testfunc', (mcFunc) => {
     target = new Selector('e', {
         tag: 'cutecat'
-    })
+    }).setScores('HaTem', {
+        max: 10
+    }).setTag('asdf')
     mcFunc.gamemode(target, 'creative')
     mcFunc.effect_give(target, 'unluck')
     mcFunc.effect_give(target, 'pancake')
