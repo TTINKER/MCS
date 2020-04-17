@@ -24,8 +24,10 @@ class Datapack {
     }
     createFunction(nameSpace, funcName, callback) {
         const dir = `./${this.packname}/data/${nameSpace}/functions/${funcName}.mcfunction`
-        const writer = str => {
-            console.log(`${dir} : ${str}`)
+        console.log(`"${nameSpace}:${funcName}" : `)
+        const writer = ([str, err]) => {
+            console.log(`${str.trim()}`)
+            if (err) console.log(err)
             fs.appendFile(dir, str, err => console.log(err))
         }
         fs.writeFile(dir, '', err => console.log(dir))
